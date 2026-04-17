@@ -11,15 +11,17 @@
 from __future__ import annotations
 
 import argparse
+import csv
 import math
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, Iterable, List
+from typing import Dict, Iterable, List, Sequence
 
 import numpy as np
 
 
 WIDTH = 16
+SCRIPT_DIR = Path(__file__).resolve().parent
 REQUIRED_SIGNAL_ALIASES = {
     "tb_A": ("tb_A", "A [15:0]"),
     "tb_B": ("tb_B", "B [15:0]"),
@@ -40,6 +42,37 @@ class Sample:
     sum_value: int
     cout: int
     expected_total: int
+
+
+@dataclass
+class AnalysisResults:
+    sample_count: int
+    functional_mismatches: int
+    expected_mismatches: int
+    a_values: np.ndarray
+    b_values: np.ndarray
+    cin_values: np.ndarray
+    sum_values: np.ndarray
+    dut_totals: np.ndarray
+    empirical_a_probs: np.ndarray
+    empirical_b_probs: np.ndarray
+    empirical_sum_probs: np.ndarray
+    empirical_carry_probs: np.ndarray
+    theoretical_sum_probs: np.ndarray
+    theoretical_carry_probs: np.ndarray
+    sum_absolute_errors: np.ndarray
+    carry_absolute_errors: np.ndarray
+    sum_z_scores: np.ndarray
+    carry_z_scores: np.ndarray
+    p_cin_empirical: float
+    p_cout_given_c0: float
+    p_cout_given_c1: float
+    z_c0: float
+    z_c1: float
+    n_c0: int
+    n_c1: int
+    model_valid: bool
+    sigma_threshold: float
 
 
 def parse_args() -> argparse.Namespace:
@@ -63,6 +96,12 @@ def parse_args() -> argparse.Namespace:
         type=float,
         default=4.0,
         help="Maximum allowed absolute z-score for a metric to be considered valid.",
+    )
+    parser.add_argument(
+        "--output-dir",
+        type=Path,
+        default=Path("analysis_outputs"),
+        help="Directory where tables and SVG plots will be written.",
     )
     return parser.parse_args()
 
@@ -247,7 +286,516 @@ def bernoulli_z_score(observed_probability: float, expected_probability: float, 
     return (observed_probability - expected_probability) / sigma
 
 
-def analyze_samples(samples: List[Sample], sigma_threshold: float) -> bool:
+def resolve_vcd_path(vcd_path: Path) -> Path:
+    candidate_paths = []
+    if vcd_path.is_absolute():
+        candidate_paths.append(vcd_path)
+    else:
+        candidate_paths.append(SCRIPT_DIR / vcd_path)
+        candidate_paths.append(Path.cwd() / vcd_path)
+
+    for candidate in candidate_paths:
+        if candidate.exists():
+            return candidate.resolve()
+
+    searched_locations = "\n".join(f"  - {candidate}" for candidate in candidate_paths)
+    raise FileNotFoundError(
+        f"Could not find the VCD file '{vcd_path}'.\n"
+        "Looked in:\n"
+        f"{searched_locations}\n"
+        "Run the testbench first, or pass --vcd /full/path/to/adder16_random.vcd."
+    )
+
+
+def write_csv_table(output_path: Path, header: Sequence[str], rows: Sequence[Sequence[object]]) -> None:
+    with output_path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.writer(handle)
+        writer.writerow(header)
+        writer.writerows(rows)
+
+
+def svg_header(width: int, height: int) -> List[str]:
+    return [
+        f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" '
+        f'viewBox="0 0 {width} {height}">',
+        '<rect width="100%" height="100%" fill="#fcfcf8"/>',
+    ]
+
+
+def write_svg(output_path: Path, lines: Sequence[str]) -> None:
+    output_path.write_text("\n".join([*lines, "</svg>"]) + "\n", encoding="utf-8")
+
+
+def create_line_plot_svg(
+    output_path: Path,
+    title: str,
+    x_labels: Sequence[str],
+    expected_values: Sequence[float],
+    empirical_values: Sequence[float],
+    y_label: str,
+    expected_color: str = "#1f5aa6",
+    empirical_color: str = "#cc5500",
+) -> None:
+    width = 1100
+    height = 620
+    margin_left = 90
+    margin_right = 30
+    margin_top = 80
+    margin_bottom = 120
+    plot_width = width - margin_left - margin_right
+    plot_height = height - margin_top - margin_bottom
+
+    def x_coord(index: int) -> float:
+        if len(x_labels) == 1:
+            return margin_left + plot_width / 2
+        return margin_left + index * plot_width / (len(x_labels) - 1)
+
+    def y_coord(value: float) -> float:
+        value = max(0.0, min(1.0, value))
+        return margin_top + (1.0 - value) * plot_height
+
+    svg_lines = svg_header(width, height)
+    svg_lines.extend(
+        [
+            f'<text x="{width / 2}" y="36" text-anchor="middle" font-size="24" fill="#1f1f1f">{title}</text>',
+            f'<text x="{width / 2}" y="{height - 20}" text-anchor="middle" font-size="18" fill="#1f1f1f">Bit / Stage</text>',
+            f'<text x="28" y="{height / 2}" text-anchor="middle" font-size="18" fill="#1f1f1f" '
+            'transform="rotate(-90 28,310)">{}</text>'.format(y_label),
+            f'<line x1="{margin_left}" y1="{margin_top}" x2="{margin_left}" y2="{margin_top + plot_height}" stroke="#222" stroke-width="2"/>',
+            f'<line x1="{margin_left}" y1="{margin_top + plot_height}" x2="{margin_left + plot_width}" y2="{margin_top + plot_height}" stroke="#222" stroke-width="2"/>',
+        ]
+    )
+
+    for tick in np.linspace(0.0, 1.0, 6):
+        y = y_coord(float(tick))
+        svg_lines.append(
+            f'<line x1="{margin_left}" y1="{y:.2f}" x2="{margin_left + plot_width}" y2="{y:.2f}" '
+            'stroke="#dddddd" stroke-width="1"/>'
+        )
+        svg_lines.append(
+            f'<text x="{margin_left - 10}" y="{y + 5:.2f}" text-anchor="end" font-size="14" fill="#444">{tick:.1f}</text>'
+        )
+
+    for index, label in enumerate(x_labels):
+        x = x_coord(index)
+        svg_lines.append(
+            f'<line x1="{x:.2f}" y1="{margin_top + plot_height}" x2="{x:.2f}" y2="{margin_top + plot_height + 6}" '
+            'stroke="#222" stroke-width="1"/>'
+        )
+        svg_lines.append(
+            f'<text x="{x:.2f}" y="{margin_top + plot_height + 24}" text-anchor="middle" font-size="12" fill="#444">{label}</text>'
+        )
+
+    def polyline(values: Sequence[float], color: str) -> str:
+        points = " ".join(f"{x_coord(i):.2f},{y_coord(v):.2f}" for i, v in enumerate(values))
+        return f'<polyline fill="none" stroke="{color}" stroke-width="3" points="{points}"/>'
+
+    svg_lines.append(polyline(expected_values, expected_color))
+    svg_lines.append(polyline(empirical_values, empirical_color))
+
+    for index, value in enumerate(expected_values):
+        svg_lines.append(
+            f'<circle cx="{x_coord(index):.2f}" cy="{y_coord(value):.2f}" r="4" fill="{expected_color}"/>'
+        )
+    for index, value in enumerate(empirical_values):
+        svg_lines.append(
+            f'<circle cx="{x_coord(index):.2f}" cy="{y_coord(value):.2f}" r="4" fill="{empirical_color}"/>'
+        )
+
+    legend_x = width - 280
+    legend_y = 55
+    svg_lines.extend(
+        [
+            f'<rect x="{legend_x}" y="{legend_y}" width="220" height="54" fill="#ffffff" stroke="#cccccc"/>',
+            f'<line x1="{legend_x + 16}" y1="{legend_y + 18}" x2="{legend_x + 56}" y2="{legend_y + 18}" stroke="{expected_color}" stroke-width="3"/>',
+            f'<text x="{legend_x + 66}" y="{legend_y + 23}" font-size="15" fill="#222">Theoretical model</text>',
+            f'<line x1="{legend_x + 16}" y1="{legend_y + 38}" x2="{legend_x + 56}" y2="{legend_y + 38}" stroke="{empirical_color}" stroke-width="3"/>',
+            f'<text x="{legend_x + 66}" y="{legend_y + 43}" font-size="15" fill="#222">Empirical VCD data</text>',
+        ]
+    )
+
+    write_svg(output_path, svg_lines)
+
+
+def create_bar_plot_svg(
+    output_path: Path,
+    title: str,
+    labels: Sequence[str],
+    expected_values: Sequence[float],
+    empirical_values: Sequence[float],
+    y_label: str,
+) -> None:
+    width = 900
+    height = 620
+    margin_left = 90
+    margin_right = 30
+    margin_top = 80
+    margin_bottom = 120
+    plot_width = width - margin_left - margin_right
+    plot_height = height - margin_top - margin_bottom
+    group_width = plot_width / max(len(labels), 1)
+    bar_width = group_width * 0.28
+
+    def y_coord(value: float) -> float:
+        value = max(0.0, min(1.0, value))
+        return margin_top + (1.0 - value) * plot_height
+
+    svg_lines = svg_header(width, height)
+    svg_lines.extend(
+        [
+            f'<text x="{width / 2}" y="36" text-anchor="middle" font-size="24" fill="#1f1f1f">{title}</text>',
+            f'<text x="{width / 2}" y="{height - 20}" text-anchor="middle" font-size="18" fill="#1f1f1f">Condition</text>',
+            f'<text x="28" y="{height / 2}" text-anchor="middle" font-size="18" fill="#1f1f1f" '
+            'transform="rotate(-90 28,310)">{}</text>'.format(y_label),
+            f'<line x1="{margin_left}" y1="{margin_top}" x2="{margin_left}" y2="{margin_top + plot_height}" stroke="#222" stroke-width="2"/>',
+            f'<line x1="{margin_left}" y1="{margin_top + plot_height}" x2="{margin_left + plot_width}" y2="{margin_top + plot_height}" stroke="#222" stroke-width="2"/>',
+        ]
+    )
+
+    for tick in np.linspace(0.0, 1.0, 6):
+        y = y_coord(float(tick))
+        svg_lines.append(
+            f'<line x1="{margin_left}" y1="{y:.2f}" x2="{margin_left + plot_width}" y2="{y:.2f}" stroke="#dddddd" stroke-width="1"/>'
+        )
+        svg_lines.append(
+            f'<text x="{margin_left - 10}" y="{y + 5:.2f}" text-anchor="end" font-size="14" fill="#444">{tick:.1f}</text>'
+        )
+
+    for index, label in enumerate(labels):
+        center_x = margin_left + group_width * (index + 0.5)
+        expected_x = center_x - bar_width - 6
+        empirical_x = center_x + 6
+        expected_top = y_coord(expected_values[index])
+        empirical_top = y_coord(empirical_values[index])
+        baseline = margin_top + plot_height
+
+        svg_lines.append(
+            f'<rect x="{expected_x:.2f}" y="{expected_top:.2f}" width="{bar_width:.2f}" '
+            f'height="{baseline - expected_top:.2f}" fill="#1f5aa6"/>'
+        )
+        svg_lines.append(
+            f'<rect x="{empirical_x:.2f}" y="{empirical_top:.2f}" width="{bar_width:.2f}" '
+            f'height="{baseline - empirical_top:.2f}" fill="#cc5500"/>'
+        )
+        svg_lines.append(
+            f'<text x="{center_x:.2f}" y="{baseline + 24}" text-anchor="middle" font-size="14" fill="#444">{label}</text>'
+        )
+        svg_lines.append(
+            f'<text x="{expected_x + bar_width / 2:.2f}" y="{expected_top - 8:.2f}" text-anchor="middle" font-size="12" fill="#1f5aa6">{expected_values[index]:.3f}</text>'
+        )
+        svg_lines.append(
+            f'<text x="{empirical_x + bar_width / 2:.2f}" y="{empirical_top - 8:.2f}" text-anchor="middle" font-size="12" fill="#cc5500">{empirical_values[index]:.3f}</text>'
+        )
+
+    legend_x = width - 270
+    legend_y = 55
+    svg_lines.extend(
+        [
+            f'<rect x="{legend_x}" y="{legend_y}" width="210" height="54" fill="#ffffff" stroke="#cccccc"/>',
+            f'<rect x="{legend_x + 16}" y="{legend_y + 10}" width="18" height="18" fill="#1f5aa6"/>',
+            f'<text x="{legend_x + 44}" y="{legend_y + 24}" font-size="15" fill="#222">Theoretical model</text>',
+            f'<rect x="{legend_x + 16}" y="{legend_y + 31}" width="18" height="18" fill="#cc5500"/>',
+            f'<text x="{legend_x + 44}" y="{legend_y + 45}" font-size="15" fill="#222">Empirical VCD data</text>',
+        ]
+    )
+
+    write_svg(output_path, svg_lines)
+
+
+def create_single_series_bar_plot_svg(
+    output_path: Path,
+    title: str,
+    labels: Sequence[str],
+    values: Sequence[float],
+    y_label: str,
+    bar_color: str = "#b94e48",
+) -> None:
+    width = 1100
+    height = 620
+    margin_left = 90
+    margin_right = 30
+    margin_top = 80
+    margin_bottom = 120
+    plot_width = width - margin_left - margin_right
+    plot_height = height - margin_top - margin_bottom
+    group_width = plot_width / max(len(labels), 1)
+    bar_width = group_width * 0.6
+    max_value = max(max(values), 1e-6)
+
+    def y_coord(value: float) -> float:
+        value = max(0.0, value)
+        return margin_top + (1.0 - (value / max_value)) * plot_height
+
+    svg_lines = svg_header(width, height)
+    svg_lines.extend(
+        [
+            f'<text x="{width / 2}" y="36" text-anchor="middle" font-size="24" fill="#1f1f1f">{title}</text>',
+            f'<text x="{width / 2}" y="{height - 20}" text-anchor="middle" font-size="18" fill="#1f1f1f">Bit / Stage</text>',
+            f'<text x="28" y="{height / 2}" text-anchor="middle" font-size="18" fill="#1f1f1f" '
+            'transform="rotate(-90 28,310)">{}</text>'.format(y_label),
+            f'<line x1="{margin_left}" y1="{margin_top}" x2="{margin_left}" y2="{margin_top + plot_height}" stroke="#222" stroke-width="2"/>',
+            f'<line x1="{margin_left}" y1="{margin_top + plot_height}" x2="{margin_left + plot_width}" y2="{margin_top + plot_height}" stroke="#222" stroke-width="2"/>',
+        ]
+    )
+
+    for tick in np.linspace(0.0, max_value, 6):
+        y = y_coord(float(tick))
+        svg_lines.append(
+            f'<line x1="{margin_left}" y1="{y:.2f}" x2="{margin_left + plot_width}" y2="{y:.2f}" stroke="#dddddd" stroke-width="1"/>'
+        )
+        svg_lines.append(
+            f'<text x="{margin_left - 10}" y="{y + 5:.2f}" text-anchor="end" font-size="14" fill="#444">{tick:.4f}</text>'
+        )
+
+    baseline = margin_top + plot_height
+    for index, label in enumerate(labels):
+        center_x = margin_left + group_width * (index + 0.5)
+        x = center_x - bar_width / 2
+        top = y_coord(values[index])
+        svg_lines.append(
+            f'<rect x="{x:.2f}" y="{top:.2f}" width="{bar_width:.2f}" height="{baseline - top:.2f}" fill="{bar_color}"/>'
+        )
+        svg_lines.append(
+            f'<text x="{center_x:.2f}" y="{baseline + 24}" text-anchor="middle" font-size="12" fill="#444">{label}</text>'
+        )
+        svg_lines.append(
+            f'<text x="{center_x:.2f}" y="{top - 8:.2f}" text-anchor="middle" font-size="11" fill="{bar_color}">{values[index]:.4f}</text>'
+        )
+
+    write_svg(output_path, svg_lines)
+
+
+def create_histogram_svg(
+    output_path: Path,
+    title: str,
+    data: np.ndarray,
+    bins: int,
+    x_label: str,
+    bar_color: str = "#5f8f3e",
+) -> None:
+    width = 1100
+    height = 620
+    margin_left = 90
+    margin_right = 30
+    margin_top = 80
+    margin_bottom = 120
+    plot_width = width - margin_left - margin_right
+    plot_height = height - margin_top - margin_bottom
+
+    counts, bin_edges = np.histogram(data.astype(np.float64), bins=bins)
+    max_count = max(int(counts.max()), 1)
+    bar_width = plot_width / max(len(counts), 1)
+
+    def y_coord(value: float) -> float:
+        return margin_top + (1.0 - (value / max_count)) * plot_height
+
+    svg_lines = svg_header(width, height)
+    svg_lines.extend(
+        [
+            f'<text x="{width / 2}" y="36" text-anchor="middle" font-size="24" fill="#1f1f1f">{title}</text>',
+            f'<text x="{width / 2}" y="{height - 20}" text-anchor="middle" font-size="18" fill="#1f1f1f">{x_label}</text>',
+            f'<text x="28" y="{height / 2}" text-anchor="middle" font-size="18" fill="#1f1f1f" '
+            'transform="rotate(-90 28,310)">Count</text>',
+            f'<line x1="{margin_left}" y1="{margin_top}" x2="{margin_left}" y2="{margin_top + plot_height}" stroke="#222" stroke-width="2"/>',
+            f'<line x1="{margin_left}" y1="{margin_top + plot_height}" x2="{margin_left + plot_width}" y2="{margin_top + plot_height}" stroke="#222" stroke-width="2"/>',
+        ]
+    )
+
+    for tick in np.linspace(0.0, max_count, 6):
+        y = y_coord(float(tick))
+        svg_lines.append(
+            f'<line x1="{margin_left}" y1="{y:.2f}" x2="{margin_left + plot_width}" y2="{y:.2f}" stroke="#dddddd" stroke-width="1"/>'
+        )
+        svg_lines.append(
+            f'<text x="{margin_left - 10}" y="{y + 5:.2f}" text-anchor="end" font-size="14" fill="#444">{int(round(tick))}</text>'
+        )
+
+    baseline = margin_top + plot_height
+    for index, count in enumerate(counts):
+        x = margin_left + index * bar_width
+        top = y_coord(float(count))
+        svg_lines.append(
+            f'<rect x="{x + 1:.2f}" y="{top:.2f}" width="{max(bar_width - 2, 1):.2f}" height="{baseline - top:.2f}" fill="{bar_color}"/>'
+        )
+
+    tick_count = min(8, len(bin_edges))
+    tick_indices = np.linspace(0, len(bin_edges) - 1, tick_count, dtype=int)
+    for tick_index in np.unique(tick_indices):
+        fraction = tick_index / max(len(bin_edges) - 1, 1)
+        x = margin_left + fraction * plot_width
+        label = f"{bin_edges[tick_index]:.0f}"
+        svg_lines.append(
+            f'<line x1="{x:.2f}" y1="{baseline}" x2="{x:.2f}" y2="{baseline + 6}" stroke="#222" stroke-width="1"/>'
+        )
+        svg_lines.append(
+            f'<text x="{x:.2f}" y="{baseline + 24}" text-anchor="middle" font-size="12" fill="#444">{label}</text>'
+        )
+
+    write_svg(output_path, svg_lines)
+
+
+def write_analysis_outputs(output_dir: Path, results: AnalysisResults) -> None:
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    bit_labels = [str(bit) for bit in range(WIDTH)]
+    carry_labels = ["Cin", *[f"C{stage}" for stage in range(1, WIDTH + 1)]]
+
+    write_csv_table(
+        output_dir / "sum_bit_comparison.csv",
+        ["bit", "theoretical_probability", "empirical_probability", "z_score"],
+        [
+            [bit, f"{results.theoretical_sum_probs[bit]:.6f}", f"{results.empirical_sum_probs[bit]:.6f}", f"{results.sum_z_scores[bit]:.6f}"]
+            for bit in range(WIDTH)
+        ],
+    )
+    write_csv_table(
+        output_dir / "carry_probability_comparison.csv",
+        ["stage", "theoretical_probability", "empirical_probability", "z_score"],
+        [
+            [
+                carry_labels[stage],
+                f"{results.theoretical_carry_probs[stage]:.6f}",
+                f"{results.empirical_carry_probs[stage]:.6f}",
+                f"{results.carry_z_scores[stage]:.6f}",
+            ]
+            for stage in range(WIDTH + 1)
+        ],
+    )
+    write_csv_table(
+        output_dir / "input_probability_summary.csv",
+        ["signal", "empirical_probability", "theoretical_probability"],
+        [
+            ["Cin", f"{results.p_cin_empirical:.6f}", "0.500000"],
+            ["A_mean", f"{results.empirical_a_probs.mean():.6f}", "0.500000"],
+            ["B_mean", f"{results.empirical_b_probs.mean():.6f}", "0.500000"],
+        ],
+    )
+    write_csv_table(
+        output_dir / "conditional_carry_comparison.csv",
+        ["condition", "theoretical_probability", "empirical_probability", "z_score", "count"],
+        [
+            ["P(C_out=1 | C_in=0)", "0.250000", f"{results.p_cout_given_c0:.6f}", f"{results.z_c0:.6f}", results.n_c0],
+            ["P(C_out=1 | C_in=1)", "0.750000", f"{results.p_cout_given_c1:.6f}", f"{results.z_c1:.6f}", results.n_c1],
+        ],
+    )
+    write_csv_table(
+        output_dir / "summary_metrics.csv",
+        ["metric", "value"],
+        [
+            ["sample_count", results.sample_count],
+            ["functional_mismatches", results.functional_mismatches],
+            ["expected_mismatches", results.expected_mismatches],
+            ["sigma_threshold", f"{results.sigma_threshold:.6f}"],
+            ["model_valid", str(results.model_valid)],
+        ],
+    )
+    write_csv_table(
+        output_dir / "sum_absolute_error.csv",
+        ["bit", "absolute_error"],
+        [[bit, f"{results.sum_absolute_errors[bit]:.6f}"] for bit in range(WIDTH)],
+    )
+    write_csv_table(
+        output_dir / "carry_absolute_error.csv",
+        ["stage", "absolute_error"],
+        [[carry_labels[stage], f"{results.carry_absolute_errors[stage]:.6f}"] for stage in range(WIDTH + 1)],
+    )
+
+    create_line_plot_svg(
+        output_dir / "sum_probability_comparison.svg",
+        "Sum Bit Probability: Theoretical vs Empirical",
+        bit_labels,
+        results.theoretical_sum_probs.tolist(),
+        results.empirical_sum_probs.tolist(),
+        "P(S_i = 1)",
+    )
+    create_line_plot_svg(
+        output_dir / "carry_probability_comparison.svg",
+        "Carry Probability by Stage: Theoretical vs Empirical",
+        carry_labels,
+        results.theoretical_carry_probs.tolist(),
+        results.empirical_carry_probs.tolist(),
+        "P(C_i = 1)",
+    )
+    create_line_plot_svg(
+        output_dir / "input_bit_probability_A.svg",
+        "Input A Bit Probabilities",
+        bit_labels,
+        [0.5] * WIDTH,
+        results.empirical_a_probs.tolist(),
+        "P(A_i = 1)",
+    )
+    create_line_plot_svg(
+        output_dir / "input_bit_probability_B.svg",
+        "Input B Bit Probabilities",
+        bit_labels,
+        [0.5] * WIDTH,
+        results.empirical_b_probs.tolist(),
+        "P(B_i = 1)",
+    )
+    create_bar_plot_svg(
+        output_dir / "conditional_carry_probabilities.svg",
+        "Conditional Carry Transition Probabilities",
+        ["C_in = 0", "C_in = 1"],
+        [0.25, 0.75],
+        [results.p_cout_given_c0, results.p_cout_given_c1],
+        "P(C_out = 1 | condition)",
+    )
+    create_single_series_bar_plot_svg(
+        output_dir / "sum_absolute_error.svg",
+        "Absolute Error in Sum Bit Probabilities",
+        bit_labels,
+        results.sum_absolute_errors.tolist(),
+        "|Empirical - Theoretical|",
+    )
+    create_single_series_bar_plot_svg(
+        output_dir / "carry_absolute_error.svg",
+        "Absolute Error in Carry Probabilities",
+        carry_labels,
+        results.carry_absolute_errors.tolist(),
+        "|Empirical - Theoretical|",
+    )
+    create_histogram_svg(
+        output_dir / "sum_value_histogram.svg",
+        "Histogram of DUT Sum[15:0] Values",
+        results.sum_values,
+        bins=32,
+        x_label="Sum value",
+    )
+    create_histogram_svg(
+        output_dir / "input_A_histogram.svg",
+        "Histogram of Input A Values",
+        results.a_values,
+        bins=32,
+        x_label="A value",
+        bar_color="#4b6cb7",
+    )
+    create_histogram_svg(
+        output_dir / "input_B_histogram.svg",
+        "Histogram of Input B Values",
+        results.b_values,
+        bins=32,
+        x_label="B value",
+        bar_color="#8a5a44",
+    )
+    create_histogram_svg(
+        output_dir / "total_output_histogram.svg",
+        "Histogram of 17-bit Total Output Values",
+        results.dut_totals,
+        bins=40,
+        x_label="Total output value",
+        bar_color="#7a4eab",
+    )
+    create_histogram_svg(
+        output_dir / "cin_histogram.svg",
+        "Histogram of Carry-In Samples",
+        results.cin_values,
+        bins=2,
+        x_label="Cin",
+        bar_color="#ad7c2b",
+    )
+
+
+def analyze_samples(samples: List[Sample], sigma_threshold: float) -> AnalysisResults:
     if not samples:
         raise ValueError("No complete samples were recovered from the VCD.")
 
@@ -273,10 +821,13 @@ def analyze_samples(samples: List[Sample], sigma_threshold: float) -> bool:
     )
 
     theoretical_carry_profile = np.array(carry_probability_profile(WIDTH, 0.5))
+    theoretical_sum_probs = np.full(WIDTH, 0.5, dtype=np.float64)
     empirical_a_probs = a_bits.mean(axis=0)
     empirical_b_probs = b_bits.mean(axis=0)
     empirical_sum_probs = sum_bits.mean(axis=0)
     empirical_carry_probs = carry_matrix.mean(axis=0)
+    sum_absolute_errors = np.abs(empirical_sum_probs - theoretical_sum_probs)
+    carry_absolute_errors = np.abs(empirical_carry_probs - theoretical_carry_profile)
 
     print("=== Dataset Summary From VCD ===")
     print(f"Recovered samples: {len(samples)}")
@@ -297,20 +848,24 @@ def analyze_samples(samples: List[Sample], sigma_threshold: float) -> bool:
     print()
 
     print("=== Sum-Bit Validation ===")
+    sum_z_scores = np.zeros(WIDTH, dtype=np.float64)
     max_sum_z = 0.0
     for bit in range(WIDTH):
         observed = float(empirical_sum_probs[bit])
         z_score = bernoulli_z_score(observed, 0.5, len(samples))
+        sum_z_scores[bit] = z_score
         max_sum_z = max(max_sum_z, abs(z_score))
         print(f"Bit {bit:2d}: empirical={observed:.4f}, expected=0.5000, z={z_score:+.2f}")
     print()
 
     print("=== Carry-State Validation ===")
+    carry_z_scores = np.zeros(WIDTH + 1, dtype=np.float64)
     max_carry_z = 0.0
     for stage in range(WIDTH + 1):
         observed = float(empirical_carry_probs[stage])
         expected = float(theoretical_carry_profile[stage])
         z_score = bernoulli_z_score(observed, expected, len(samples))
+        carry_z_scores[stage] = z_score
         max_carry_z = max(max_carry_z, abs(z_score))
         label = "Cin" if stage == 0 else f"C{stage}"
         print(f"{label:>3}: empirical={observed:.4f}, expected={expected:.4f}, z={z_score:+.2f}")
@@ -355,20 +910,79 @@ def analyze_samples(samples: List[Sample], sigma_threshold: float) -> bool:
             f"under the current {sigma_threshold:.1f} sigma acceptance band."
         )
 
-    return model_valid
+    return AnalysisResults(
+        sample_count=len(samples),
+        functional_mismatches=functional_mismatches,
+        expected_mismatches=expected_mismatches,
+        a_values=a_values,
+        b_values=b_values,
+        cin_values=cin_values,
+        sum_values=sum_values,
+        dut_totals=dut_totals,
+        empirical_a_probs=empirical_a_probs,
+        empirical_b_probs=empirical_b_probs,
+        empirical_sum_probs=empirical_sum_probs,
+        empirical_carry_probs=empirical_carry_probs,
+        theoretical_sum_probs=theoretical_sum_probs,
+        theoretical_carry_probs=theoretical_carry_profile,
+        sum_absolute_errors=sum_absolute_errors,
+        carry_absolute_errors=carry_absolute_errors,
+        sum_z_scores=sum_z_scores,
+        carry_z_scores=carry_z_scores,
+        p_cin_empirical=float(cin_values.mean()),
+        p_cout_given_c0=p_cout_given_c0,
+        p_cout_given_c1=p_cout_given_c1,
+        z_c0=z_c0,
+        z_c1=z_c1,
+        n_c0=n_c0,
+        n_c1=n_c1,
+        model_valid=model_valid,
+        sigma_threshold=sigma_threshold,
+    )
 
 
 def main() -> None:
     args = parse_args()
+    resolved_vcd_path = resolve_vcd_path(args.vcd)
+    output_dir = args.output_dir
+    if not output_dir.is_absolute():
+        output_dir = SCRIPT_DIR / output_dir
+
     print_probabilistic_model(WIDTH, 0.5)
-    samples = parse_vcd_samples(args.vcd)
+    print(f"Using VCD file: {resolved_vcd_path}")
+    print(f"Writing analysis outputs to: {output_dir}")
+    print()
+
+    samples = parse_vcd_samples(resolved_vcd_path)
     if len(samples) != args.num_samples:
         print(
             f"Warning: expected {args.num_samples} samples, but recovered {len(samples)} complete samples "
-            f"from {args.vcd}."
+            f"from {resolved_vcd_path}."
         )
         print()
-    analyze_samples(samples, args.sigma_threshold)
+    results = analyze_samples(samples, args.sigma_threshold)
+    write_analysis_outputs(output_dir, results)
+    print()
+    print("=== Output Files ===")
+    print(output_dir / "summary_metrics.csv")
+    print(output_dir / "input_probability_summary.csv")
+    print(output_dir / "sum_bit_comparison.csv")
+    print(output_dir / "carry_probability_comparison.csv")
+    print(output_dir / "conditional_carry_comparison.csv")
+    print(output_dir / "sum_probability_comparison.svg")
+    print(output_dir / "carry_probability_comparison.svg")
+    print(output_dir / "input_bit_probability_A.svg")
+    print(output_dir / "input_bit_probability_B.svg")
+    print(output_dir / "conditional_carry_probabilities.svg")
+    print(output_dir / "sum_absolute_error.csv")
+    print(output_dir / "carry_absolute_error.csv")
+    print(output_dir / "sum_absolute_error.svg")
+    print(output_dir / "carry_absolute_error.svg")
+    print(output_dir / "sum_value_histogram.svg")
+    print(output_dir / "input_A_histogram.svg")
+    print(output_dir / "input_B_histogram.svg")
+    print(output_dir / "total_output_histogram.svg")
+    print(output_dir / "cin_histogram.svg")
 
 
 if __name__ == "__main__":
