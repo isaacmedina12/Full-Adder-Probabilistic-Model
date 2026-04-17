@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="620" viewBox="0 0 1100 620">
+<rect width="100%" height="100%" fill="#fcfcf8"/>
+<text x="550.0" y="36" text-anchor="middle" font-size="24" fill="#1f1f1f">Histogram of Input B Values</text>
+<text x="550.0" y="600" text-anchor="middle" font-size="18" fill="#1f1f1f">B value</text>
+<text x="28" y="310.0" text-anchor="middle" font-size="18" fill="#1f1f1f" transform="rotate(-90 28,310)">Count</text>
+<line x1="90" y1="80" x2="90" y2="500" stroke="#222" stroke-width="2"/>
+<line x1="90" y1="500" x2="1070" y2="500" stroke="#222" stroke-width="2"/>
+<line x1="90" y1="500.00" x2="1070" y2="500.00" stroke="#dddddd" stroke-width="1"/>
+<text x="80" y="505.00" text-anchor="end" font-size="14" fill="#444">0</text>
+<line x1="90" y1="416.00" x2="1070" y2="416.00" stroke="#dddddd" stroke-width="1"/>
+<text x="80" y="421.00" text-anchor="end" font-size="14" fill="#444">71</text>
+<line x1="90" y1="332.00" x2="1070" y2="332.00" stroke="#dddddd" stroke-width="1"/>
+<text x="80" y="337.00" text-anchor="end" font-size="14" fill="#444">142</text>
+<line x1="90" y1="248.00" x2="1070" y2="248.00" stroke="#dddddd" stroke-width="1"/>
+<text x="80" y="253.00" text-anchor="end" font-size="14" fill="#444">214</text>
+<line x1="90" y1="164.00" x2="1070" y2="164.00" stroke="#dddddd" stroke-width="1"/>
+<text x="80" y="169.00" text-anchor="end" font-size="14" fill="#444">285</text>
+<line x1="90" y1="80.00" x2="1070" y2="80.00" stroke="#dddddd" stroke-width="1"/>
+<text x="80" y="85.00" text-anchor="end" font-size="14" fill="#444">356</text>
+<rect x="91.00" y="129.55" width="28.62" height="370.45" fill="#8a5a44"/>
+<rect x="121.62" y="147.25" width="28.62" height="352.75" fill="#8a5a44"/>
+<rect x="152.25" y="109.49" width="28.62" height="390.51" fill="#8a5a44"/>
+<rect x="182.88" y="143.71" width="28.62" height="356.29" fill="#8a5a44"/>
+<rect x="213.50" y="138.99" width="28.62" height="361.01" fill="#8a5a44"/>
+<rect x="244.12" y="141.35" width="28.62" height="358.65" fill="#8a5a44"/>
+<rect x="274.75" y="105.96" width="28.62" height="394.04" fill="#8a5a44"/>
+<rect x="305.38" y="162.58" width="28.62" height="337.42" fill="#8a5a44"/>
+<rect x="336.00" y="151.97" width="28.62" height="348.03" fill="#8a5a44"/>
+<rect x="366.62" y="176.74" width="28.62" height="323.26" fill="#8a5a44"/>
+<rect x="397.25" y="126.01" width="28.62" height="373.99" fill="#8a5a44"/>
+<rect x="427.88" y="80.00" width="28.62" height="420.00" fill="#8a5a44"/>
+<rect x="458.50" y="144.89" width="28.62" height="355.11" fill="#8a5a44"/>
+<rect x="489.12" y="155.51" width="28.62" height="344.49" fill="#8a5a44"/>
+<rect x="519.75" y="128.37" width="28.62" height="371.63" fill="#8a5a44"/>
+<rect x="550.38" y="111.85" width="28.62" height="388.15" fill="#8a5a44"/>
+<rect x="581.00" y="128.37" width="28.62" height="371.63" fill="#8a5a44"/>
+<rect x="611.62" y="137.81" width="28.62" height="362.19" fill="#8a5a44"/>
+<rect x="642.25" y="147.25" width="28.62" height="352.75" fill="#8a5a44"/>
+<rect x="672.88" y="153.15" width="28.62" height="346.85" fill="#8a5a44"/>
+<rect x="703.50" y="137.81" width="28.62" height="362.19" fill="#8a5a44"/>
+<rect x="734.12" y="101.24" width="28.62" height="398.76" fill="#8a5a44"/>
+<rect x="764.75" y="126.01" width="28.62" height="373.99" fill="#8a5a44"/>
+<rect x="795.38" y="103.60" width="28.62" height="396.40" fill="#8a5a44"/>
+<rect x="826.00" y="154.33" width="28.62" height="345.67" fill="#8a5a44"/>
+<rect x="856.62" y="92.98" width="28.62" height="407.02" fill="#8a5a44"/>
+<rect x="887.25" y="123.65" width="28.62" height="376.35" fill="#8a5a44"/>
+<rect x="917.88" y="135.45" width="28.62" height="364.55" fill="#8a5a44"/>
+<rect x="948.50" y="96.52" width="28.62" height="403.48" fill="#8a5a44"/>
+<rect x="979.12" y="146.07" width="28.62" height="353.93" fill="#8a5a44"/>
+<rect x="1009.75" y="136.63" width="28.62" height="363.37" fill="#8a5a44"/>
+<rect x="1040.38" y="127.19" width="28.62" height="372.81" fill="#8a5a44"/>
+<line x1="90.00" y1="500" x2="90.00" y2="506" stroke="#222" stroke-width="1"/>
+<text x="90.00" y="524" text-anchor="middle" font-size="12" fill="#444">8</text>
+<line x1="212.50" y1="500" x2="212.50" y2="506" stroke="#222" stroke-width="1"/>
+<text x="212.50" y="524" text-anchor="middle" font-size="12" fill="#444">8198</text>
+<line x1="365.62" y1="500" x2="365.62" y2="506" stroke="#222" stroke-width="1"/>
+<text x="365.62" y="524" text-anchor="middle" font-size="12" fill="#444">18436</text>
+<line x1="488.12" y1="500" x2="488.12" y2="506" stroke="#222" stroke-width="1"/>
+<text x="488.12" y="524" text-anchor="middle" font-size="12" fill="#444">26626</text>
+<line x1="641.25" y1="500" x2="641.25" y2="506" stroke="#222" stroke-width="1"/>
+<text x="641.25" y="524" text-anchor="middle" font-size="12" fill="#444">36864</text>
+<line x1="763.75" y1="500" x2="763.75" y2="506" stroke="#222" stroke-width="1"/>
+<text x="763.75" y="524" text-anchor="middle" font-size="12" fill="#444">45054</text>
+<line x1="916.88" y1="500" x2="916.88" y2="506" stroke="#222" stroke-width="1"/>
+<text x="916.88" y="524" text-anchor="middle" font-size="12" fill="#444">55292</text>
+<line x1="1070.00" y1="500" x2="1070.00" y2="506" stroke="#222" stroke-width="1"/>
+<text x="1070.00" y="524" text-anchor="middle" font-size="12" fill="#444">65530</text>
+</svg>

@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="620" viewBox="0 0 1100 620">
+<rect width="100%" height="100%" fill="#fcfcf8"/>
+<text x="550.0" y="36" text-anchor="middle" font-size="24" fill="#1f1f1f">Carry Probability by Stage: Theoretical vs Empirical</text>
+<text x="550.0" y="600" text-anchor="middle" font-size="18" fill="#1f1f1f">Bit / Stage</text>
+<text x="28" y="310.0" text-anchor="middle" font-size="18" fill="#1f1f1f" transform="rotate(-90 28,310)">P(C_i = 1)</text>
+<line x1="90" y1="80" x2="90" y2="500" stroke="#222" stroke-width="2"/>
+<line x1="90" y1="500" x2="1070" y2="500" stroke="#222" stroke-width="2"/>
+<line x1="90" y1="500.00" x2="1070" y2="500.00" stroke="#dddddd" stroke-width="1"/>
+<text x="80" y="505.00" text-anchor="end" font-size="14" fill="#444">0.0</text>
+<line x1="90" y1="416.00" x2="1070" y2="416.00" stroke="#dddddd" stroke-width="1"/>
+<text x="80" y="421.00" text-anchor="end" font-size="14" fill="#444">0.2</text>
+<line x1="90" y1="332.00" x2="1070" y2="332.00" stroke="#dddddd" stroke-width="1"/>
+<text x="80" y="337.00" text-anchor="end" font-size="14" fill="#444">0.4</text>
+<line x1="90" y1="248.00" x2="1070" y2="248.00" stroke="#dddddd" stroke-width="1"/>
+<text x="80" y="253.00" text-anchor="end" font-size="14" fill="#444">0.6</text>
+<line x1="90" y1="164.00" x2="1070" y2="164.00" stroke="#dddddd" stroke-width="1"/>
+<text x="80" y="169.00" text-anchor="end" font-size="14" fill="#444">0.8</text>
+<line x1="90" y1="80.00" x2="1070" y2="80.00" stroke="#dddddd" stroke-width="1"/>
+<text x="80" y="85.00" text-anchor="end" font-size="14" fill="#444">1.0</text>
+<line x1="90.00" y1="500" x2="90.00" y2="506" stroke="#222" stroke-width="1"/>
+<text x="90.00" y="524" text-anchor="middle" font-size="12" fill="#444">Cin</text>
+<line x1="151.25" y1="500" x2="151.25" y2="506" stroke="#222" stroke-width="1"/>
+<text x="151.25" y="524" text-anchor="middle" font-size="12" fill="#444">C1</text>
+<line x1="212.50" y1="500" x2="212.50" y2="506" stroke="#222" stroke-width="1"/>
+<text x="212.50" y="524" text-anchor="middle" font-size="12" fill="#444">C2</text>
+<line x1="273.75" y1="500" x2="273.75" y2="506" stroke="#222" stroke-width="1"/>
+<text x="273.75" y="524" text-anchor="middle" font-size="12" fill="#444">C3</text>
+<line x1="335.00" y1="500" x2="335.00" y2="506" stroke="#222" stroke-width="1"/>
+<text x="335.00" y="524" text-anchor="middle" font-size="12" fill="#444">C4</text>
+<line x1="396.25" y1="500" x2="396.25" y2="506" stroke="#222" stroke-width="1"/>
+<text x="396.25" y="524" text-anchor="middle" font-size="12" fill="#444">C5</text>
+<line x1="457.50" y1="500" x2="457.50" y2="506" stroke="#222" stroke-width="1"/>
+<text x="457.50" y="524" text-anchor="middle" font-size="12" fill="#444">C6</text>
+<line x1="518.75" y1="500" x2="518.75" y2="506" stroke="#222" stroke-width="1"/>
+<text x="518.75" y="524" text-anchor="middle" font-size="12" fill="#444">C7</text>
+<line x1="580.00" y1="500" x2="580.00" y2="506" stroke="#222" stroke-width="1"/>
+<text x="580.00" y="524" text-anchor="middle" font-size="12" fill="#444">C8</text>
+<line x1="641.25" y1="500" x2="641.25" y2="506" stroke="#222" stroke-width="1"/>
+<text x="641.25" y="524" text-anchor="middle" font-size="12" fill="#444">C9</text>
+<line x1="702.50" y1="500" x2="702.50" y2="506" stroke="#222" stroke-width="1"/>
+<text x="702.50" y="524" text-anchor="middle" font-size="12" fill="#444">C10</text>
+<line x1="763.75" y1="500" x2="763.75" y2="506" stroke="#222" stroke-width="1"/>
+<text x="763.75" y="524" text-anchor="middle" font-size="12" fill="#444">C11</text>
+<line x1="825.00" y1="500" x2="825.00" y2="506" stroke="#222" stroke-width="1"/>
+<text x="825.00" y="524" text-anchor="middle" font-size="12" fill="#444">C12</text>
+<line x1="886.25" y1="500" x2="886.25" y2="506" stroke="#222" stroke-width="1"/>
+<text x="886.25" y="524" text-anchor="middle" font-size="12" fill="#444">C13</text>
+<line x1="947.50" y1="500" x2="947.50" y2="506" stroke="#222" stroke-width="1"/>
+<text x="947.50" y="524" text-anchor="middle" font-size="12" fill="#444">C14</text>
+<line x1="1008.75" y1="500" x2="1008.75" y2="506" stroke="#222" stroke-width="1"/>
+<text x="1008.75" y="524" text-anchor="middle" font-size="12" fill="#444">C15</text>
+<line x1="1070.00" y1="500" x2="1070.00" y2="506" stroke="#222" stroke-width="1"/>
+<text x="1070.00" y="524" text-anchor="middle" font-size="12" fill="#444">C16</text>
+<polyline fill="none" stroke="#1f5aa6" stroke-width="3" points="90.00,290.00 151.25,290.00 212.50,290.00 273.75,290.00 335.00,290.00 396.25,290.00 457.50,290.00 518.75,290.00 580.00,290.00 641.25,290.00 702.50,290.00 763.75,290.00 825.00,290.00 886.25,290.00 947.50,290.00 1008.75,290.00 1070.00,290.00"/>
+<polyline fill="none" stroke="#cc5500" stroke-width="3" points="90.00,288.82 151.25,288.66 212.50,287.14 273.75,288.36 335.00,290.17 396.25,290.92 457.50,289.66 518.75,292.44 580.00,293.91 641.25,293.15 702.50,293.95 763.75,294.24 825.00,291.93 886.25,290.25 947.50,288.40 1008.75,291.30 1070.00,290.21"/>
+<circle cx="90.00" cy="290.00" r="4" fill="#1f5aa6"/>
+<circle cx="151.25" cy="290.00" r="4" fill="#1f5aa6"/>
+<circle cx="212.50" cy="290.00" r="4" fill="#1f5aa6"/>
+<circle cx="273.75" cy="290.00" r="4" fill="#1f5aa6"/>
+<circle cx="335.00" cy="290.00" r="4" fill="#1f5aa6"/>
+<circle cx="396.25" cy="290.00" r="4" fill="#1f5aa6"/>
+<circle cx="457.50" cy="290.00" r="4" fill="#1f5aa6"/>
+<circle cx="518.75" cy="290.00" r="4" fill="#1f5aa6"/>
+<circle cx="580.00" cy="290.00" r="4" fill="#1f5aa6"/>
+<circle cx="641.25" cy="290.00" r="4" fill="#1f5aa6"/>
+<circle cx="702.50" cy="290.00" r="4" fill="#1f5aa6"/>
+<circle cx="763.75" cy="290.00" r="4" fill="#1f5aa6"/>
+<circle cx="825.00" cy="290.00" r="4" fill="#1f5aa6"/>
+<circle cx="886.25" cy="290.00" r="4" fill="#1f5aa6"/>
+<circle cx="947.50" cy="290.00" r="4" fill="#1f5aa6"/>
+<circle cx="1008.75" cy="290.00" r="4" fill="#1f5aa6"/>
+<circle cx="1070.00" cy="290.00" r="4" fill="#1f5aa6"/>
+<circle cx="90.00" cy="288.82" r="4" fill="#cc5500"/>
+<circle cx="151.25" cy="288.66" r="4" fill="#cc5500"/>
+<circle cx="212.50" cy="287.14" r="4" fill="#cc5500"/>
+<circle cx="273.75" cy="288.36" r="4" fill="#cc5500"/>
+<circle cx="335.00" cy="290.17" r="4" fill="#cc5500"/>
+<circle cx="396.25" cy="290.92" r="4" fill="#cc5500"/>
+<circle cx="457.50" cy="289.66" r="4" fill="#cc5500"/>
+<circle cx="518.75" cy="292.44" r="4" fill="#cc5500"/>
+<circle cx="580.00" cy="293.91" r="4" fill="#cc5500"/>
+<circle cx="641.25" cy="293.15" r="4" fill="#cc5500"/>
+<circle cx="702.50" cy="293.95" r="4" fill="#cc5500"/>
+<circle cx="763.75" cy="294.24" r="4" fill="#cc5500"/>
+<circle cx="825.00" cy="291.93" r="4" fill="#cc5500"/>
+<circle cx="886.25" cy="290.25" r="4" fill="#cc5500"/>
+<circle cx="947.50" cy="288.40" r="4" fill="#cc5500"/>
+<circle cx="1008.75" cy="291.30" r="4" fill="#cc5500"/>
+<circle cx="1070.00" cy="290.21" r="4" fill="#cc5500"/>
+<rect x="820" y="55" width="220" height="54" fill="#ffffff" stroke="#cccccc"/>
+<line x1="836" y1="73" x2="876" y2="73" stroke="#1f5aa6" stroke-width="3"/>
+<text x="886" y="78" font-size="15" fill="#222">Theoretical model</text>
+<line x1="836" y1="93" x2="876" y2="93" stroke="#cc5500" stroke-width="3"/>
+<text x="886" y="98" font-size="15" fill="#222">Empirical VCD data</text>
+</svg>

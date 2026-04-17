@@ -1,0 +1,6 @@
+metric,value
+sample_count,10000
+functional_mismatches,0
+expected_mismatches,0
+sigma_threshold,4.000000
+model_valid,True

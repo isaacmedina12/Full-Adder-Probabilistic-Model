@@ -1,0 +1,3 @@
+condition,theoretical_probability,empirical_probability,z_score,count
+P(C_out=1 | C_in=0),0.250000,0.249088,-0.596902,80317
+P(C_out=1 | C_in=1),0.750000,0.748516,-0.967426,79683
