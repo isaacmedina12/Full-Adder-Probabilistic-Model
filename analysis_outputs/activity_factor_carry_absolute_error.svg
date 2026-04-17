@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="620" viewBox="0 0 1100 620">
+<rect width="100%" height="100%" fill="#fcfcf8"/>
+<text x="550.0" y="36" text-anchor="middle" font-size="24" fill="#1f1f1f">Absolute Error in Carry Activity Factors</text>
+<text x="550.0" y="600" text-anchor="middle" font-size="18" fill="#1f1f1f">Bit / Stage</text>
+<text x="28" y="310.0" text-anchor="middle" font-size="18" fill="#1f1f1f" transform="rotate(-90 28,310)">|alpha_i^sim - alpha_i^model|</text>
+<line x1="90" y1="80" x2="90" y2="500" stroke="#222" stroke-width="2"/>
+<line x1="90" y1="500" x2="1070" y2="500" stroke="#222" stroke-width="2"/>
+<line x1="90" y1="500.00" x2="1070" y2="500.00" stroke="#dddddd" stroke-width="1"/>
+<text x="80" y="505.00" text-anchor="end" font-size="14" fill="#444">0.0000</text>
+<line x1="90" y1="416.00" x2="1070" y2="416.00" stroke="#dddddd" stroke-width="1"/>
+<text x="80" y="421.00" text-anchor="end" font-size="14" fill="#444">0.0020</text>
+<line x1="90" y1="332.00" x2="1070" y2="332.00" stroke="#dddddd" stroke-width="1"/>
+<text x="80" y="337.00" text-anchor="end" font-size="14" fill="#444">0.0041</text>
+<line x1="90" y1="248.00" x2="1070" y2="248.00" stroke="#dddddd" stroke-width="1"/>
+<text x="80" y="253.00" text-anchor="end" font-size="14" fill="#444">0.0061</text>
+<line x1="90" y1="164.00" x2="1070" y2="164.00" stroke="#dddddd" stroke-width="1"/>
+<text x="80" y="169.00" text-anchor="end" font-size="14" fill="#444">0.0081</text>
+<line x1="90" y1="80.00" x2="1070" y2="80.00" stroke="#dddddd" stroke-width="1"/>
+<text x="80" y="85.00" text-anchor="end" font-size="14" fill="#444">0.0102</text>
+<rect x="101.53" y="431.72" width="34.59" height="68.28" fill="#7d4ea3"/>
+<text x="118.82" y="524" text-anchor="middle" font-size="12" fill="#444">Cin</text>
+<text x="118.82" y="423.72" text-anchor="middle" font-size="11" fill="#7d4ea3">0.0017</text>
+<rect x="159.18" y="274.48" width="34.59" height="225.52" fill="#7d4ea3"/>
+<text x="176.47" y="524" text-anchor="middle" font-size="12" fill="#444">C1</text>
+<text x="176.47" y="266.48" text-anchor="middle" font-size="11" fill="#7d4ea3">0.0055</text>
+<rect x="216.82" y="481.38" width="34.59" height="18.62" fill="#7d4ea3"/>
+<text x="234.12" y="524" text-anchor="middle" font-size="12" fill="#444">C2</text>
+<text x="234.12" y="473.38" text-anchor="middle" font-size="11" fill="#7d4ea3">0.0005</text>
+<rect x="274.47" y="332.41" width="34.59" height="167.59" fill="#7d4ea3"/>
+<text x="291.76" y="524" text-anchor="middle" font-size="12" fill="#444">C3</text>
+<text x="291.76" y="324.41" text-anchor="middle" font-size="11" fill="#7d4ea3">0.0041</text>
+<rect x="332.12" y="303.45" width="34.59" height="196.55" fill="#7d4ea3"/>
+<text x="349.41" y="524" text-anchor="middle" font-size="12" fill="#444">C4</text>
+<text x="349.41" y="295.45" text-anchor="middle" font-size="11" fill="#7d4ea3">0.0048</text>
+<rect x="389.76" y="80.00" width="34.59" height="420.00" fill="#7d4ea3"/>
+<text x="407.06" y="524" text-anchor="middle" font-size="12" fill="#444">C5</text>
+<text x="407.06" y="72.00" text-anchor="middle" font-size="11" fill="#7d4ea3">0.0102</text>
+<rect x="447.41" y="344.83" width="34.59" height="155.17" fill="#7d4ea3"/>
+<text x="464.71" y="524" text-anchor="middle" font-size="12" fill="#444">C6</text>
+<text x="464.71" y="336.83" text-anchor="middle" font-size="11" fill="#7d4ea3">0.0038</text>
+<rect x="505.06" y="468.97" width="34.59" height="31.03" fill="#7d4ea3"/>
+<text x="522.35" y="524" text-anchor="middle" font-size="12" fill="#444">C7</text>
+<text x="522.35" y="460.97" text-anchor="middle" font-size="11" fill="#7d4ea3">0.0008</text>
+<rect x="562.71" y="427.59" width="34.59" height="72.41" fill="#7d4ea3"/>
+<text x="580.00" y="524" text-anchor="middle" font-size="12" fill="#444">C8</text>
+<text x="580.00" y="419.59" text-anchor="middle" font-size="11" fill="#7d4ea3">0.0018</text>
+<rect x="620.35" y="344.83" width="34.59" height="155.17" fill="#7d4ea3"/>
+<text x="637.65" y="524" text-anchor="middle" font-size="12" fill="#444">C9</text>
+<text x="637.65" y="336.83" text-anchor="middle" font-size="11" fill="#7d4ea3">0.0038</text>
+<rect x="678.00" y="133.79" width="34.59" height="366.21" fill="#7d4ea3"/>
+<text x="695.29" y="524" text-anchor="middle" font-size="12" fill="#444">C10</text>
+<text x="695.29" y="125.79" text-anchor="middle" font-size="11" fill="#7d4ea3">0.0089</text>
+<rect x="735.65" y="464.83" width="34.59" height="35.17" fill="#7d4ea3"/>
+<text x="752.94" y="524" text-anchor="middle" font-size="12" fill="#444">C11</text>
+<text x="752.94" y="456.83" text-anchor="middle" font-size="11" fill="#7d4ea3">0.0009</text>
+<rect x="793.29" y="266.21" width="34.59" height="233.79" fill="#7d4ea3"/>
+<text x="810.59" y="524" text-anchor="middle" font-size="12" fill="#444">C12</text>
+<text x="810.59" y="258.21" text-anchor="middle" font-size="11" fill="#7d4ea3">0.0057</text>
+<rect x="850.94" y="270.34" width="34.59" height="229.66" fill="#7d4ea3"/>
+<text x="868.24" y="524" text-anchor="middle" font-size="12" fill="#444">C13</text>
+<text x="868.24" y="262.34" text-anchor="middle" font-size="11" fill="#7d4ea3">0.0056</text>
+<rect x="908.59" y="295.17" width="34.59" height="204.83" fill="#7d4ea3"/>
+<text x="925.88" y="524" text-anchor="middle" font-size="12" fill="#444">C14</text>
+<text x="925.88" y="287.17" text-anchor="middle" font-size="11" fill="#7d4ea3">0.0050</text>
+<rect x="966.24" y="369.66" width="34.59" height="130.34" fill="#7d4ea3"/>
+<text x="983.53" y="524" text-anchor="middle" font-size="12" fill="#444">C15</text>
+<text x="983.53" y="361.66" text-anchor="middle" font-size="11" fill="#7d4ea3">0.0032</text>
+<rect x="1023.88" y="361.38" width="34.59" height="138.62" fill="#7d4ea3"/>
+<text x="1041.18" y="524" text-anchor="middle" font-size="12" fill="#444">C16</text>
+<text x="1041.18" y="353.38" text-anchor="middle" font-size="11" fill="#7d4ea3">0.0034</text>
+</svg>

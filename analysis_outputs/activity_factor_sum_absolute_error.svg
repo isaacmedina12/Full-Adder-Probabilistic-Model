@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="620" viewBox="0 0 1100 620">
+<rect width="100%" height="100%" fill="#fcfcf8"/>
+<text x="550.0" y="36" text-anchor="middle" font-size="24" fill="#1f1f1f">Absolute Error in Sum Activity Factors</text>
+<text x="550.0" y="600" text-anchor="middle" font-size="18" fill="#1f1f1f">Bit / Stage</text>
+<text x="28" y="310.0" text-anchor="middle" font-size="18" fill="#1f1f1f" transform="rotate(-90 28,310)">|alpha_i^sim - alpha_i^model|</text>
+<line x1="90" y1="80" x2="90" y2="500" stroke="#222" stroke-width="2"/>
+<line x1="90" y1="500" x2="1070" y2="500" stroke="#222" stroke-width="2"/>
+<line x1="90" y1="500.00" x2="1070" y2="500.00" stroke="#dddddd" stroke-width="1"/>
+<text x="80" y="505.00" text-anchor="end" font-size="14" fill="#444">0.0000</text>
+<line x1="90" y1="416.00" x2="1070" y2="416.00" stroke="#dddddd" stroke-width="1"/>
+<text x="80" y="421.00" text-anchor="end" font-size="14" fill="#444">0.0026</text>
+<line x1="90" y1="332.00" x2="1070" y2="332.00" stroke="#dddddd" stroke-width="1"/>
+<text x="80" y="337.00" text-anchor="end" font-size="14" fill="#444">0.0051</text>
+<line x1="90" y1="248.00" x2="1070" y2="248.00" stroke="#dddddd" stroke-width="1"/>
+<text x="80" y="253.00" text-anchor="end" font-size="14" fill="#444">0.0077</text>
+<line x1="90" y1="164.00" x2="1070" y2="164.00" stroke="#dddddd" stroke-width="1"/>
+<text x="80" y="169.00" text-anchor="end" font-size="14" fill="#444">0.0102</text>
+<line x1="90" y1="80.00" x2="1070" y2="80.00" stroke="#dddddd" stroke-width="1"/>
+<text x="80" y="85.00" text-anchor="end" font-size="14" fill="#444">0.0128</text>
+<rect x="102.25" y="366.59" width="36.75" height="133.41" fill="#7d4ea3"/>
+<text x="120.62" y="524" text-anchor="middle" font-size="12" fill="#444">0</text>
+<text x="120.62" y="358.59" text-anchor="middle" font-size="11" fill="#7d4ea3">0.0041</text>
+<rect x="163.50" y="409.41" width="36.75" height="90.59" fill="#7d4ea3"/>
+<text x="181.88" y="524" text-anchor="middle" font-size="12" fill="#444">1</text>
+<text x="181.88" y="401.41" text-anchor="middle" font-size="11" fill="#7d4ea3">0.0028</text>
+<rect x="224.75" y="475.29" width="36.75" height="24.71" fill="#7d4ea3"/>
+<text x="243.12" y="524" text-anchor="middle" font-size="12" fill="#444">2</text>
+<text x="243.12" y="467.29" text-anchor="middle" font-size="11" fill="#7d4ea3">0.0008</text>
+<rect x="286.00" y="80.00" width="36.75" height="420.00" fill="#7d4ea3"/>
+<text x="304.38" y="524" text-anchor="middle" font-size="12" fill="#444">3</text>
+<text x="304.38" y="72.00" text-anchor="middle" font-size="11" fill="#7d4ea3">0.0128</text>
+<rect x="347.25" y="145.88" width="36.75" height="354.12" fill="#7d4ea3"/>
+<text x="365.62" y="524" text-anchor="middle" font-size="12" fill="#444">4</text>
+<text x="365.62" y="137.88" text-anchor="middle" font-size="11" fill="#7d4ea3">0.0108</text>
+<rect x="408.50" y="442.35" width="36.75" height="57.65" fill="#7d4ea3"/>
+<text x="426.88" y="524" text-anchor="middle" font-size="12" fill="#444">5</text>
+<text x="426.88" y="434.35" text-anchor="middle" font-size="11" fill="#7d4ea3">0.0018</text>
+<rect x="469.75" y="409.41" width="36.75" height="90.59" fill="#7d4ea3"/>
+<text x="488.12" y="524" text-anchor="middle" font-size="12" fill="#444">6</text>
+<text x="488.12" y="401.41" text-anchor="middle" font-size="11" fill="#7d4ea3">0.0028</text>
+<rect x="531.00" y="392.94" width="36.75" height="107.06" fill="#7d4ea3"/>
+<text x="549.38" y="524" text-anchor="middle" font-size="12" fill="#444">7</text>
+<text x="549.38" y="384.94" text-anchor="middle" font-size="11" fill="#7d4ea3">0.0033</text>
+<rect x="592.25" y="472.00" width="36.75" height="28.00" fill="#7d4ea3"/>
+<text x="610.62" y="524" text-anchor="middle" font-size="12" fill="#444">8</text>
+<text x="610.62" y="464.00" text-anchor="middle" font-size="11" fill="#7d4ea3">0.0009</text>
+<rect x="653.50" y="435.76" width="36.75" height="64.24" fill="#7d4ea3"/>
+<text x="671.88" y="524" text-anchor="middle" font-size="12" fill="#444">9</text>
+<text x="671.88" y="427.76" text-anchor="middle" font-size="11" fill="#7d4ea3">0.0020</text>
+<rect x="714.75" y="472.00" width="36.75" height="28.00" fill="#7d4ea3"/>
+<text x="733.12" y="524" text-anchor="middle" font-size="12" fill="#444">10</text>
+<text x="733.12" y="464.00" text-anchor="middle" font-size="11" fill="#7d4ea3">0.0009</text>
+<rect x="776.00" y="448.94" width="36.75" height="51.06" fill="#7d4ea3"/>
+<text x="794.38" y="524" text-anchor="middle" font-size="12" fill="#444">11</text>
+<text x="794.38" y="440.94" text-anchor="middle" font-size="11" fill="#7d4ea3">0.0016</text>
+<rect x="837.25" y="330.35" width="36.75" height="169.65" fill="#7d4ea3"/>
+<text x="855.62" y="524" text-anchor="middle" font-size="12" fill="#444">12</text>
+<text x="855.62" y="322.35" text-anchor="middle" font-size="11" fill="#7d4ea3">0.0052</text>
+<rect x="898.50" y="290.82" width="36.75" height="209.18" fill="#7d4ea3"/>
+<text x="916.88" y="524" text-anchor="middle" font-size="12" fill="#444">13</text>
+<text x="916.88" y="282.82" text-anchor="middle" font-size="11" fill="#7d4ea3">0.0064</text>
+<rect x="959.75" y="389.65" width="36.75" height="110.35" fill="#7d4ea3"/>
+<text x="978.12" y="524" text-anchor="middle" font-size="12" fill="#444">14</text>
+<text x="978.12" y="381.65" text-anchor="middle" font-size="11" fill="#7d4ea3">0.0034</text>
+<rect x="1021.00" y="416.00" width="36.75" height="84.00" fill="#7d4ea3"/>
+<text x="1039.38" y="524" text-anchor="middle" font-size="12" fill="#444">15</text>
+<text x="1039.38" y="408.00" text-anchor="middle" font-size="11" fill="#7d4ea3">0.0026</text>
+</svg>
