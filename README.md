@@ -1,4 +1,9 @@
 # Full-Adder-Probabilistic-Model
+### Made by: Isaac Medina and Asher Milberg for Tufts EE24 Final Project
+### Prof. Peter Lu
+### Tufts University | School of Engineering
+### Department of Electrical and Computer Engineering
+### Class of 2027
 
 This repository studies a 16-bit ripple-carry adder from both a digital logic and a probabilistic modeling perspective. The project combines:
 
