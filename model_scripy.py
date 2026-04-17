@@ -60,6 +60,18 @@ class AnalysisResults:
     empirical_carry_probs: np.ndarray
     theoretical_sum_probs: np.ndarray
     theoretical_carry_probs: np.ndarray
+    empirical_a_activity: np.ndarray
+    empirical_b_activity: np.ndarray
+    empirical_sum_activity: np.ndarray
+    empirical_carry_activity: np.ndarray
+    theoretical_a_activity: np.ndarray
+    theoretical_b_activity: np.ndarray
+    theoretical_sum_activity: np.ndarray
+    theoretical_carry_activity: np.ndarray
+    a_activity_absolute_errors: np.ndarray
+    b_activity_absolute_errors: np.ndarray
+    sum_activity_absolute_errors: np.ndarray
+    carry_activity_absolute_errors: np.ndarray
     sum_absolute_errors: np.ndarray
     carry_absolute_errors: np.ndarray
     sum_z_scores: np.ndarray
@@ -286,6 +298,13 @@ def bernoulli_z_score(observed_probability: float, expected_probability: float, 
     return (observed_probability - expected_probability) / sigma
 
 
+def compute_activity_factor(bit_matrix: np.ndarray) -> np.ndarray:
+    if len(bit_matrix) < 2:
+        return np.zeros(bit_matrix.shape[1], dtype=np.float64)
+    transitions = bit_matrix[1:] ^ bit_matrix[:-1]
+    return transitions.mean(axis=0)
+
+
 def resolve_vcd_path(vcd_path: Path) -> Path:
     candidate_paths = []
     if vcd_path.is_absolute():
@@ -412,6 +431,114 @@ def create_line_plot_svg(
             f'<line x1="{legend_x + 16}" y1="{legend_y + 38}" x2="{legend_x + 56}" y2="{legend_y + 38}" stroke="{empirical_color}" stroke-width="3"/>',
             f'<text x="{legend_x + 66}" y="{legend_y + 43}" font-size="15" fill="#222">Empirical VCD data</text>',
         ]
+    )
+
+    write_svg(output_path, svg_lines)
+
+
+def create_multi_line_plot_svg(
+    output_path: Path,
+    title: str,
+    x_labels: Sequence[str],
+    series: Sequence[tuple[str, Sequence[float | None], str]],
+    y_label: str,
+    summary_note: str | None = None,
+) -> None:
+    width = 1100
+    height = 620
+    margin_left = 90
+    margin_right = 30
+    margin_top = 80
+    margin_bottom = 120
+    plot_width = width - margin_left - margin_right
+    plot_height = height - margin_top - margin_bottom
+
+    all_values = [
+        float(value)
+        for _, values, _ in series
+        for value in values
+        if value is not None
+    ]
+    max_value = max(max(all_values, default=0.0), 1e-6)
+
+    def x_coord(index: int) -> float:
+        if len(x_labels) == 1:
+            return margin_left + plot_width / 2
+        return margin_left + index * plot_width / (len(x_labels) - 1)
+
+    def y_coord(value: float) -> float:
+        value = max(0.0, value)
+        return margin_top + (1.0 - (value / max_value)) * plot_height
+
+    svg_lines = svg_header(width, height)
+    svg_lines.extend(
+        [
+            f'<text x="{width / 2}" y="36" text-anchor="middle" font-size="24" fill="#1f1f1f">{title}</text>',
+            f'<text x="{width / 2}" y="{height - 20}" text-anchor="middle" font-size="18" fill="#1f1f1f">Bit / Stage</text>',
+            f'<text x="28" y="{height / 2}" text-anchor="middle" font-size="18" fill="#1f1f1f" '
+            'transform="rotate(-90 28,310)">{}</text>'.format(y_label),
+            f'<line x1="{margin_left}" y1="{margin_top}" x2="{margin_left}" y2="{margin_top + plot_height}" stroke="#222" stroke-width="2"/>',
+            f'<line x1="{margin_left}" y1="{margin_top + plot_height}" x2="{margin_left + plot_width}" y2="{margin_top + plot_height}" stroke="#222" stroke-width="2"/>',
+        ]
+    )
+
+    for tick in np.linspace(0.0, max_value, 6):
+        y = y_coord(float(tick))
+        svg_lines.append(
+            f'<line x1="{margin_left}" y1="{y:.2f}" x2="{margin_left + plot_width}" y2="{y:.2f}" stroke="#dddddd" stroke-width="1"/>'
+        )
+        svg_lines.append(
+            f'<text x="{margin_left - 10}" y="{y + 5:.2f}" text-anchor="end" font-size="14" fill="#444">{tick:.4f}</text>'
+        )
+
+    for index, label in enumerate(x_labels):
+        x = x_coord(index)
+        svg_lines.append(
+            f'<line x1="{x:.2f}" y1="{margin_top + plot_height}" x2="{x:.2f}" y2="{margin_top + plot_height + 6}" stroke="#222" stroke-width="1"/>'
+        )
+        svg_lines.append(
+            f'<text x="{x:.2f}" y="{margin_top + plot_height + 24}" text-anchor="middle" font-size="12" fill="#444">{label}</text>'
+        )
+
+    for series_index, (label, values, color) in enumerate(series):
+        segments: List[List[str]] = [[]]
+        for index, value in enumerate(values):
+            if value is None:
+                if segments[-1]:
+                    segments.append([])
+                continue
+            segments[-1].append(f"{x_coord(index):.2f},{y_coord(float(value)):.2f}")
+        for segment in segments:
+            if len(segment) >= 2:
+                svg_lines.append(
+                    f'<polyline fill="none" stroke="{color}" stroke-width="3" points="{" ".join(segment)}"/>'
+                )
+        for index, value in enumerate(values):
+            if value is None:
+                continue
+            svg_lines.append(
+                f'<circle cx="{x_coord(index):.2f}" cy="{y_coord(float(value)):.2f}" r="4" fill="{color}"/>'
+            )
+
+        legend_x = width - 300
+        legend_y = 45 + series_index * 22
+        svg_lines.append(
+            f'<line x1="{legend_x}" y1="{legend_y}" x2="{legend_x + 34}" y2="{legend_y}" stroke="{color}" stroke-width="3"/>'
+        )
+        svg_lines.append(
+            f'<text x="{legend_x + 44}" y="{legend_y + 5}" font-size="15" fill="#222">{label}</text>'
+        )
+
+    if summary_note:
+        note_y = 45 + 22 * len(series)
+        svg_lines.append(
+            f'<text x="{width - 300}" y="{note_y + 5}" font-size="14" fill="#222">{summary_note}</text>'
+        )
+
+    legend_height = 20 + 22 * len(series) + (24 if summary_note else 0)
+    svg_lines.insert(
+        2,
+        f'<rect x="{width - 320}" y="30" width="250" height="{legend_height}" fill="#ffffff" stroke="#cccccc"/>',
     )
 
     write_svg(output_path, svg_lines)
@@ -699,6 +826,26 @@ def write_analysis_outputs(output_dir: Path, results: AnalysisResults) -> None:
         ["stage", "absolute_error"],
         [[carry_labels[stage], f"{results.carry_absolute_errors[stage]:.6f}"] for stage in range(WIDTH + 1)],
     )
+    write_csv_table(
+        output_dir / "activity_factor_comparison.csv",
+        ["signal_family", "index", "theoretical_activity_factor", "empirical_activity_factor", "absolute_error"],
+        [
+            ["A", bit, f"{results.theoretical_a_activity[bit]:.6f}", f"{results.empirical_a_activity[bit]:.6f}", f"{results.a_activity_absolute_errors[bit]:.6f}"]
+            for bit in range(WIDTH)
+        ]
+        + [
+            ["B", bit, f"{results.theoretical_b_activity[bit]:.6f}", f"{results.empirical_b_activity[bit]:.6f}", f"{results.b_activity_absolute_errors[bit]:.6f}"]
+            for bit in range(WIDTH)
+        ]
+        + [
+            ["Sum", bit, f"{results.theoretical_sum_activity[bit]:.6f}", f"{results.empirical_sum_activity[bit]:.6f}", f"{results.sum_activity_absolute_errors[bit]:.6f}"]
+            for bit in range(WIDTH)
+        ]
+        + [
+            ["Carry", carry_labels[stage], f"{results.theoretical_carry_activity[stage]:.6f}", f"{results.empirical_carry_activity[stage]:.6f}", f"{results.carry_activity_absolute_errors[stage]:.6f}"]
+            for stage in range(WIDTH + 1)
+        ],
+    )
 
     create_line_plot_svg(
         output_dir / "sum_probability_comparison.svg",
@@ -753,6 +900,70 @@ def write_analysis_outputs(output_dir: Path, results: AnalysisResults) -> None:
         carry_labels,
         results.carry_absolute_errors.tolist(),
         "|Empirical - Theoretical|",
+    )
+    create_line_plot_svg(
+        output_dir / "activity_factor_A.svg",
+        "Activity Factor of Input A Bits",
+        bit_labels,
+        results.theoretical_a_activity.tolist(),
+        results.empirical_a_activity.tolist(),
+        "alpha_i",
+    )
+    create_line_plot_svg(
+        output_dir / "activity_factor_B.svg",
+        "Activity Factor of Input B Bits",
+        bit_labels,
+        results.theoretical_b_activity.tolist(),
+        results.empirical_b_activity.tolist(),
+        "alpha_i",
+    )
+    create_line_plot_svg(
+        output_dir / "activity_factor_sum.svg",
+        "Activity Factor of Sum Bits",
+        bit_labels,
+        results.theoretical_sum_activity.tolist(),
+        results.empirical_sum_activity.tolist(),
+        "alpha_i",
+    )
+    create_line_plot_svg(
+        output_dir / "activity_factor_carry.svg",
+        "Activity Factor of Carry States",
+        carry_labels,
+        results.theoretical_carry_activity.tolist(),
+        results.empirical_carry_activity.tolist(),
+        "alpha_i",
+    )
+    create_single_series_bar_plot_svg(
+        output_dir / "activity_factor_sum_absolute_error.svg",
+        "Absolute Error in Sum Activity Factors",
+        bit_labels,
+        results.sum_activity_absolute_errors.tolist(),
+        "|alpha_i^sim - alpha_i^model|",
+        bar_color="#7d4ea3",
+    )
+    create_single_series_bar_plot_svg(
+        output_dir / "activity_factor_carry_absolute_error.svg",
+        "Absolute Error in Carry Activity Factors",
+        carry_labels,
+        results.carry_activity_absolute_errors.tolist(),
+        "|alpha_i^sim - alpha_i^model|",
+        bar_color="#7d4ea3",
+    )
+    create_multi_line_plot_svg(
+        output_dir / "activity_factor_all_absolute_errors.svg",
+        "Absolute Error in Activity Factors for A, B, Sum, and Carry",
+        ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "C16"],
+        [
+            ("A", [*results.a_activity_absolute_errors.tolist(), None], "#1f5aa6"),
+            ("B", [*results.b_activity_absolute_errors.tolist(), None], "#cc5500"),
+            ("Sum", [*results.sum_activity_absolute_errors.tolist(), None], "#2b8a3e"),
+            ("Carry", results.carry_activity_absolute_errors.tolist(), "#7d4ea3"),
+        ],
+        "|alpha_i^sim - alpha_i^model|",
+        summary_note=(
+            "Good fit: max error = "
+            f"{max(np.max(results.a_activity_absolute_errors), np.max(results.b_activity_absolute_errors), np.max(results.sum_activity_absolute_errors), np.max(results.carry_activity_absolute_errors)):.4f}"
+        ),
     )
     create_histogram_svg(
         output_dir / "sum_value_histogram.svg",
@@ -822,10 +1033,22 @@ def analyze_samples(samples: List[Sample], sigma_threshold: float) -> AnalysisRe
 
     theoretical_carry_profile = np.array(carry_probability_profile(WIDTH, 0.5))
     theoretical_sum_probs = np.full(WIDTH, 0.5, dtype=np.float64)
+    theoretical_a_activity = np.full(WIDTH, 0.5, dtype=np.float64)
+    theoretical_b_activity = np.full(WIDTH, 0.5, dtype=np.float64)
+    theoretical_sum_activity = np.full(WIDTH, 0.5, dtype=np.float64)
+    theoretical_carry_activity = np.full(WIDTH + 1, 0.5, dtype=np.float64)
     empirical_a_probs = a_bits.mean(axis=0)
     empirical_b_probs = b_bits.mean(axis=0)
     empirical_sum_probs = sum_bits.mean(axis=0)
     empirical_carry_probs = carry_matrix.mean(axis=0)
+    empirical_a_activity = compute_activity_factor(a_bits)
+    empirical_b_activity = compute_activity_factor(b_bits)
+    empirical_sum_activity = compute_activity_factor(sum_bits)
+    empirical_carry_activity = compute_activity_factor(carry_matrix)
+    a_activity_absolute_errors = np.abs(empirical_a_activity - theoretical_a_activity)
+    b_activity_absolute_errors = np.abs(empirical_b_activity - theoretical_b_activity)
+    sum_activity_absolute_errors = np.abs(empirical_sum_activity - theoretical_sum_activity)
+    carry_activity_absolute_errors = np.abs(empirical_carry_activity - theoretical_carry_activity)
     sum_absolute_errors = np.abs(empirical_sum_probs - theoretical_sum_probs)
     carry_absolute_errors = np.abs(empirical_carry_probs - theoretical_carry_profile)
 
@@ -888,6 +1111,25 @@ def analyze_samples(samples: List[Sample], sigma_threshold: float) -> AnalysisRe
     print(f"P(C_out=1 | C_in=1): empirical={p_cout_given_c1:.4f}, expected=0.7500, z={z_c1:+.2f}, N={n_c1}")
     print()
 
+    print("=== Activity Factor Validation ===")
+    print(
+        f"Mean alpha(A_i): empirical={empirical_a_activity.mean():.4f}, expected=0.5000, "
+        f"max bit error={np.max(a_activity_absolute_errors):.4f}"
+    )
+    print(
+        f"Mean alpha(B_i): empirical={empirical_b_activity.mean():.4f}, expected=0.5000, "
+        f"max bit error={np.max(b_activity_absolute_errors):.4f}"
+    )
+    print(
+        f"Mean alpha(S_i): empirical={empirical_sum_activity.mean():.4f}, expected=0.5000, "
+        f"max bit error={np.max(sum_activity_absolute_errors):.4f}"
+    )
+    print(
+        f"Mean alpha(C_i): empirical={empirical_carry_activity.mean():.4f}, expected=0.5000, "
+        f"max stage error={np.max(carry_activity_absolute_errors):.4f}"
+    )
+    print()
+
     validity_checks = [
         functional_mismatches == 0,
         expected_mismatches == 0,
@@ -925,6 +1167,18 @@ def analyze_samples(samples: List[Sample], sigma_threshold: float) -> AnalysisRe
         empirical_carry_probs=empirical_carry_probs,
         theoretical_sum_probs=theoretical_sum_probs,
         theoretical_carry_probs=theoretical_carry_profile,
+        empirical_a_activity=empirical_a_activity,
+        empirical_b_activity=empirical_b_activity,
+        empirical_sum_activity=empirical_sum_activity,
+        empirical_carry_activity=empirical_carry_activity,
+        theoretical_a_activity=theoretical_a_activity,
+        theoretical_b_activity=theoretical_b_activity,
+        theoretical_sum_activity=theoretical_sum_activity,
+        theoretical_carry_activity=theoretical_carry_activity,
+        a_activity_absolute_errors=a_activity_absolute_errors,
+        b_activity_absolute_errors=b_activity_absolute_errors,
+        sum_activity_absolute_errors=sum_activity_absolute_errors,
+        carry_activity_absolute_errors=carry_activity_absolute_errors,
         sum_absolute_errors=sum_absolute_errors,
         carry_absolute_errors=carry_absolute_errors,
         sum_z_scores=sum_z_scores,
@@ -976,8 +1230,16 @@ def main() -> None:
     print(output_dir / "conditional_carry_probabilities.svg")
     print(output_dir / "sum_absolute_error.csv")
     print(output_dir / "carry_absolute_error.csv")
+    print(output_dir / "activity_factor_comparison.csv")
     print(output_dir / "sum_absolute_error.svg")
     print(output_dir / "carry_absolute_error.svg")
+    print(output_dir / "activity_factor_A.svg")
+    print(output_dir / "activity_factor_B.svg")
+    print(output_dir / "activity_factor_sum.svg")
+    print(output_dir / "activity_factor_carry.svg")
+    print(output_dir / "activity_factor_sum_absolute_error.svg")
+    print(output_dir / "activity_factor_carry_absolute_error.svg")
+    print(output_dir / "activity_factor_all_absolute_errors.svg")
     print(output_dir / "sum_value_histogram.svg")
     print(output_dir / "input_A_histogram.svg")
     print(output_dir / "input_B_histogram.svg")
